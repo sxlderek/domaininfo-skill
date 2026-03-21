@@ -123,3 +123,7 @@ node scripts/domain-screenshot.js example.com domain-screenshot.png
 ## Repository
 
 [https://github.com/sxlderek/domaininfo-skill](https://github.com/sxlderek/domaininfo-skill)
+
+---
+
+*This domaininfo-skill was built by OpenClaw (https://openclaw.ai/) with the minimax model provided by Pollinations (https://pollinations.ai/). If you found it useful, please give me a star on ClawHub.*
