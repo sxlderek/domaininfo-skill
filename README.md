@@ -35,9 +35,9 @@ whois example.com
 • Expiry Date: 2027-04-29
 • Domain Status: clientTransferProhibited
 • DNS Servers: robin.ns.cloudflare.com, anton.ns.cloudflare.com
-• A Record: 104.18.12.105, 104.18.13.105
-• AAAA Record: (none)
-• MX Record: 1 aspmx.l.google.com
+• A Record: 104.18.12.105 (US), 104.18.13.105 (US)
+• AAAA Record: (none) (Country Code)
+• MX Record: 1 aspmx.l.google.com (142.250.4.27 US)
 
 [Email Security Section]
 • DMARC: ✅ Active | Policy: p=none

@@ -19,6 +19,10 @@ When the user types `whois <domain>` or `whois <url>` — strip any `https://`, 
 **Phase 1 — Silent Buffer**:
 - Execute `whois <domain>` → store registrar data
 - Execute `dig <domain>` → store A/AAAA/NS/MX records
+- **IP Geolocation (Country Code)**:
+  - For each IP address found in A/AAAA records and resolved from NS/MX hostnames:
+    - Query `https://ipinfo.io/{IP_ADDRESS}/country` using `web_fetch`.
+    - Store the returned country code.
 - **Check Email Security (DMARC/SPF/DKIM)**:
   ```bash
   dig _dmarc.<domain> TXT +short          # DMARC record
@@ -71,9 +75,9 @@ For detailed setup instructions, including system dependencies, Node.js dependen
 • Expiry Date: [YYYY-MM-DD]
 • Domain Status: [status flags]
 • DNS Servers: [ns1, ns2, ...]
-• A Record: [IP]
-• AAAA Record: [IP or none]
-• MX Record: [priority] [server]
+• A Record: [IP] (Country Code)
+• AAAA Record: [IP or none] (Country Code)
+• MX Record: [priority] [server] ([IP] Country Code)
 
 [Email Security Section]
 • DMARC: [✅/❌ Active] | Policy: [none/quarantine/reject]
