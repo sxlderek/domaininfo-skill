@@ -9,7 +9,8 @@ const { chromium } = require('playwright');
   
   try {
     await page.setViewportSize({ width: 1280, height: 1024 });
-    await page.goto(`http://${domain}`, { waitUntil: 'networkidle', timeout: 15000 });
+    await page.goto(`http://${domain}`, { waitUntil: 'load', timeout: 30000 });
+    await page.waitForTimeout(3000); // Wait 3s for slow sites to render
     await page.screenshot({ path: outputPath, fullPage: false });
     console.log(`Screenshot saved to ${outputPath}`);
   } catch (err) {
