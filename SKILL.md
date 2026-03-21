@@ -10,7 +10,9 @@ Look up domain WHOIS information and capture website screenshots.
 
 ## When to Use
 
-When the user types `whois <domain>` or `whois <url>` — strip any `https://`, `http://`, `www.` prefixes to get clean domain.
+When the user types `whois <domain>` or `whois <url>` or `whois <email>`:
+- Strip any `https://`, `http://`, `www.` prefixes
+- If input contains `@`, extract the domain part after `@` (e.g., `user@example.com` → `example.com`)
 
 ## Workflow (Strict Buffer-First — NO INTERMEDIATE OUTPUT)
 
