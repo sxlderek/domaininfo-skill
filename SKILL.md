@@ -1,5 +1,5 @@
 ---
-name: domaininfo-domain-whois-email-security-tls-screenshot
+name: domaininfo
 license: MIT
 description: "Look up domain WHOIS information, check email security (DMARC/SPF/DKIM), inspect TLS certificates, and capture website screenshots. Provides a comprehensive, domain-only report."
 ---
