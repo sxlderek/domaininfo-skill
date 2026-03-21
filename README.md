@@ -12,7 +12,7 @@ A comprehensive OpenClaw Agent Skill for deep domain analysis. Get instant repor
     -   **DKIM**: Detection of common selectors (`default`, `google`, `selector1`) and key presence.
     -   Calculated Email Security Score (🟢 Excellent, 🟡 Moderate, 🔴 Poor).
 -   **TLS/SSL Certificate Check**: Reports TLS version, Certificate Authority, and expiration date for HTTPS websites.
--   **Live Website Screenshot**: Captures a screenshot of the domain's website using a headless Chromium browser.
+-   **Live Website Screenshot**: Captures a screenshot of the domain's website using headless Playwright.
 -   **Strict Domain-Only Output**: Presents information solely for the queried domain, avoiding cross-domain analysis or assumptions.
 -   **Buffer-First Execution**: Ensures a single, complete, and clean output message with all data and the screenshot.
 
@@ -58,18 +58,67 @@ whois example.com
 
 ## Setup & Requirements
 
--   **Chromium Browser**: Required for website screenshots. Install via `sudo apt install chromium-browser` (Debian/Ubuntu) or `npx playwright install chromium`.
--   **Xvfb**: A virtual display server for headless browser operation. Install via `sudo apt install xvfb`.
--   **OpenClaw Configuration**:
-    -   Ensure `browser.noSandbox: true` and `browser.headless: true` are set in your `~/.openclaw/openclaw.json`.
-    -   `DISPLAY=:99` environment variable set for OpenClaw gateway.
--   **Telegram Bot Token & Chat ID**: Configured for screenshot delivery.
+### System Dependencies
+| Binary | Package | Install Command |
+|--------|---------|-----------------|
+| `whois` | WHOIS client | `sudo apt install whois` |
+| `dig` | DNS queries | `sudo apt install dnsutils` |
+| `openssl` | TLS checks | (usually pre-installed) |
+
+### Messaging
+- Uses OpenClaw's built-in `message` tool for screenshot delivery
+- No external API tokens required — just configure your messaging provider in OpenClaw
+
+### Node.js Dependencies
+- **Node.js** (v16+)
+- **Playwright**: `npm install playwright`
+- **Playwright browsers**: `npx playwright install chromium`
+
+### Quick Install
+```bash
+cd ~/workspace
+npm init -y
+npm install playwright
+npx playwright install chromium
+```
+
+## Screenshot Script
+
+The skill uses a Node.js script with Playwright to capture screenshots. Save as `scripts/domain-screenshot.js`:
+
+```javascript
+const { chromium } = require('playwright');
+
+(async () => {
+  const domain = process.argv[2] || 'example.com';
+  const outputPath = process.argv[3] || 'domain-screenshot.png';
+  
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage();
+  
+  try {
+    await page.setViewportSize({ width: 1280, height: 1024 });
+    await page.goto(`http://${domain}`, { waitUntil: 'networkidle', timeout: 15000 });
+    await page.screenshot({ path: outputPath, fullPage: false });
+    console.log(`Screenshot saved to ${outputPath}`);
+  } catch (err) {
+    console.error(`Screenshot failed: ${err.message}`);
+  } finally {
+    await browser.close();
+  }
+})();
+```
+
+### Run the script
+```bash
+node scripts/domain-screenshot.js example.com domain-screenshot.png
+```
 
 ## Author & License
 
 -   **Author**: Derek Chan
 -   **License**: MIT
--   **Version**: 0.1.0 (Initial Release)
+-   **Version**: 0.2.0 (Playwright Update)
 
 ## Repository
 

@@ -1,7 +1,7 @@
 ---
 name: domaininfo (Domain WHOIS + Email Security + TLS + Screenshot)
 slug: domaininfo
-version: 0.1.0
+version: 0.2.0
 author: Derek Chan
 license: MIT
 homepage: https://github.com/sxlderek/domaininfo-skill
@@ -34,7 +34,7 @@ When the user types `whois <domain>` or `whois <url>` — strip any `https://`, 
   Store: DMARC policy (p=), SPF mechanisms, DKIM presence
 
 **Phase 2 — Screenshot & TLS Check**:
-- Capture screenshot with Chromium
+- Capture screenshot with Playwright
 - If website is HTTPS, also check TLS/SSL:
   ```bash
   echo | openssl s_client -connect domain:443 -servername domain 2>/dev/null | openssl x509 -noout -issuer -dates 2>/dev/null
@@ -57,7 +57,7 @@ Use `message` tool with action=send and filePath:
 {
   "action": "send",
   "caption": "domain.com screenshot",
-  "filePath": "/home/adminlin/.openclaw/workspace/domain-screenshot.png"
+  "filePath": "domain-screenshot.png"
 }
 ```
 
@@ -65,9 +65,50 @@ Do NOT also use curl fallback — single send only. If message tool fails, repor
 
 ## Required Setup
 
-- Xvfb running on display :99: `Xvfb :99 -screen 0 1280x1024x24 &`
-- Chromium installed: `chromium-browser --version`
-- Config: `browser.noSandbox: true` and `browser.headless: true` in openclaw.json
+### System Dependencies (must be installed)
+- `whois` — WHOIS lookups (`sudo apt install whois`)
+- `dig` — DNS queries (`sudo apt install dnsutils`)
+- `openssl` — TLS certificate checks (usually pre-installed)
+- `curl` — Telegram API for screenshot delivery (usually pre-installed)
+
+### Node.js Dependencies
+- **Node.js** — Required runtime (v16+)
+- **Playwright** — `npm install playwright` in workspace
+- **Playwright browsers** — `npx playwright install chromium`
+
+### Workspace Setup
+```bash
+# Install Playwright in workspace
+cd ~/workspace
+npm init -y
+npm install playwright
+npx playwright install chromium
+
+# Create screenshot script
+cat > scripts/domain-screenshot.js << 'EOF'
+const { chromium } = require('playwright');
+(async () => {
+  const domain = process.argv[2] || 'example.com';
+  const outputPath = process.argv[3] || 'domain-screenshot.png';
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage();
+  try {
+    await page.setViewportSize({ width: 1280, height: 1024 });
+    await page.goto(`http://${domain}`, { waitUntil: 'networkidle', timeout: 15000 });
+    await page.screenshot({ path: outputPath, fullPage: false });
+    console.log(`Screenshot saved to ${outputPath}`);
+  } catch (err) {
+    console.error(`Screenshot failed: ${err.message}`);
+  } finally {
+    await browser.close();
+  }
+})();
+EOF
+```
+
+### Screenshot Delivery
+- Uses OpenClaw's built-in `message` tool to send screenshots (no external tokens required)
+- Ensure OpenClaw is configured with a messaging provider (Telegram, WhatsApp, etc.)
 
 ## Example Output Format
 
@@ -93,14 +134,34 @@ Do NOT also use curl fallback — single send only. If message tool fails, repor
 • Screenshot: [sent/attached]
 ```
 
-## Commands
+## Screenshot Script
 
-Screenshot:
-```bash
-export DISPLAY=:99 && chromium-browser --headless --no-sandbox --disable-gpu --screenshot=/path/to/img.png http://domain.com
+Save as `scripts/domain-screenshot.js`:
+
+```javascript
+const { chromium } = require('playwright');
+
+(async () => {
+  const domain = process.argv[2] || 'example.com';
+  const outputPath = process.argv[3] || 'domain-screenshot.png';
+  
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage();
+  
+  try {
+    await page.setViewportSize({ width: 1280, height: 1024 });
+    await page.goto(`http://${domain}`, { waitUntil: 'networkidle', timeout: 15000 });
+    await page.screenshot({ path: outputPath, fullPage: false });
+    console.log(`Screenshot saved to ${outputPath}`);
+  } catch (err) {
+    console.error(`Screenshot failed: ${err.message}`);
+  } finally {
+    await browser.close();
+  }
+})();
 ```
 
-Send via Telegram:
+**Run screenshot**:
 ```bash
-curl -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto" -F "chat_id=${USER_ID}" -F "photo=@/path/to/img.png" -F "caption=domain.com screenshot"
+node scripts/domain-screenshot.js example.com domain-screenshot.png
 ```
