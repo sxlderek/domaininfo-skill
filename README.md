@@ -72,7 +72,7 @@ whois example.com
 ### Node.js Dependencies
 - **Node.js** (v16+)
 - **Playwright**: `npm install playwright`
-- **Playwright browsers**: `npx playwright install chromium`
+- **Playwright browser engine**: `npx playwright install chromium` (installs the browser engine Playwright uses, not a standalone Chromium executable)
 
 ### Quick Install
 ```bash
