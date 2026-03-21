@@ -1,10 +1,6 @@
 ---
-name: domaininfo (Domain WHOIS + Email Security + TLS + Screenshot)
-slug: domaininfo
-version: 0.2.0
-author: Derek Chan
+name: domaininfo-domain-whois-email-security-tls-screenshot
 license: MIT
-homepage: https://github.com/sxlderek/domaininfo-skill
 description: "Look up domain WHOIS information, check email security (DMARC/SPF/DKIM), inspect TLS certificates, and capture website screenshots. Provides a comprehensive, domain-only report."
 ---
 
@@ -34,7 +30,7 @@ When the user types `whois <domain>` or `whois <url>` — strip any `https://`, 
   Store: DMARC policy (p=), SPF mechanisms, DKIM presence
 
 **Phase 2 — Screenshot & TLS Check**:
-- Capture screenshot with Playwright
+- Capture screenshot with Playwright (see [references/setup.md](references/setup.md) for script details)
 - If website is HTTPS, also check TLS/SSL:
   ```bash
   echo | openssl s_client -connect domain:443 -servername domain 2>/dev/null | openssl x509 -noout -issuer -dates 2>/dev/null
@@ -65,50 +61,7 @@ Do NOT also use curl fallback — single send only. If message tool fails, repor
 
 ## Required Setup
 
-### System Dependencies (must be installed)
-- `whois` — WHOIS lookups (`sudo apt install whois`)
-- `dig` — DNS queries (`sudo apt install dnsutils`)
-- `openssl` — TLS certificate checks (usually pre-installed)
-- `curl` — Telegram API for screenshot delivery (usually pre-installed)
-
-### Node.js Dependencies
-- **Node.js** — Required runtime (v16+)
-- **Playwright** — `npm install playwright` in workspace
-- **Playwright browsers** — `npx playwright install chromium`
-
-### Workspace Setup
-```bash
-# Install Playwright in workspace
-cd ~/workspace
-npm init -y
-npm install playwright
-npx playwright install chromium
-
-# Create screenshot script
-cat > scripts/domain-screenshot.js << 'EOF'
-const { chromium } = require('playwright');
-(async () => {
-  const domain = process.argv[2] || 'example.com';
-  const outputPath = process.argv[3] || 'domain-screenshot.png';
-  const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage();
-  try {
-    await page.setViewportSize({ width: 1280, height: 1024 });
-    await page.goto(`http://${domain}`, { waitUntil: 'networkidle', timeout: 15000 });
-    await page.screenshot({ path: outputPath, fullPage: false });
-    console.log(`Screenshot saved to ${outputPath}`);
-  } catch (err) {
-    console.error(`Screenshot failed: ${err.message}`);
-  } finally {
-    await browser.close();
-  }
-})();
-EOF
-```
-
-### Screenshot Delivery
-- Uses OpenClaw's built-in `message` tool to send screenshots (no external tokens required)
-- Ensure OpenClaw is configured with a messaging provider (Telegram, WhatsApp, etc.)
+For detailed setup instructions, including system dependencies, Node.js dependencies, and the Playwright screenshot script, please refer to [references/setup.md](references/setup.md).
 
 ## Example Output Format
 
@@ -132,36 +85,4 @@ EOF
 
 • Website: [URL] → [status]
 • Screenshot: [sent/attached]
-```
-
-## Screenshot Script
-
-Save as `scripts/domain-screenshot.js`:
-
-```javascript
-const { chromium } = require('playwright');
-
-(async () => {
-  const domain = process.argv[2] || 'example.com';
-  const outputPath = process.argv[3] || 'domain-screenshot.png';
-  
-  const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage();
-  
-  try {
-    await page.setViewportSize({ width: 1280, height: 1024 });
-    await page.goto(`http://${domain}`, { waitUntil: 'networkidle', timeout: 15000 });
-    await page.screenshot({ path: outputPath, fullPage: false });
-    console.log(`Screenshot saved to ${outputPath}`);
-  } catch (err) {
-    console.error(`Screenshot failed: ${err.message}`);
-  } finally {
-    await browser.close();
-  }
-})();
-```
-
-**Run screenshot**:
-```bash
-node scripts/domain-screenshot.js example.com domain-screenshot.png
 ```
