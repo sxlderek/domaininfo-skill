@@ -1,25 +1,42 @@
 const { chromium } = require('playwright');
 const path = require('path');
+const fs = require('fs');
 
 (async () => {
   const domain = process.argv[2] || 'example.com';
-  const outputPath = process.argv[3] || 'screenshots/domain-screenshot.png';
-
+  // Default output path relative to script directory
+  const defaultOutput = 'screenshots/domain-screenshot.png';
+  const outputArg = process.argv[3];
+  const baseDir = path.resolve(__dirname);
+  
   // Security: Validate domain - only allow alphanumeric, hyphen, dot
   const safeDomain = domain.replace(/[^a-zA-Z0-9.-]/g, '');
   if (safeDomain !== domain) {
     console.error(`Screenshot failed: Invalid characters in domain`);
     process.exit(1);
   }
-
-  // Security: Resolve and validate output path stays within skill directory
-  const baseDir = path.resolve(__dirname);
-  const resolvedPath = path.resolve(outputPath);
-  if (!resolvedPath.startsWith(baseDir)) {
+  
+  // Build output path relative to script directory
+  let outputPath;
+  if (outputArg) {
+    // If outputArg is absolute, use it; otherwise resolve relative to baseDir
+    outputPath = path.isAbsolute(outputArg) ? outputArg : path.resolve(baseDir, outputArg);
+  } else {
+    outputPath = path.resolve(baseDir, defaultOutput);
+  }
+  
+  // Security: Ensure output path is within baseDir
+  if (!outputPath.startsWith(baseDir)) {
     console.error(`Screenshot failed: Path traversal attempt detected`);
     process.exit(1);
   }
-
+  
+  // Ensure output directory exists
+  const dir = path.dirname(outputPath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  
   let browser;
   try {
     browser = await chromium.launch({ headless: true });
@@ -36,15 +53,8 @@ const path = require('path');
     // Wait for slow sites to render
     await page.waitForTimeout(3000);
     
-    // Ensure output directory exists
-    const fs = require('fs');
-    const dir = path.dirname(resolvedPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    
-    await page.screenshot({ path: resolvedPath, fullPage: false });
-    console.log(`Screenshot saved to ${resolvedPath}`);
+    await page.screenshot({ path: outputPath, fullPage: false });
+    console.log(`Screenshot saved to ${outputPath}`);
   } catch (err) {
     console.error(`Screenshot failed: ${err.message}`);
     process.exit(1);
