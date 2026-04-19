@@ -1,10 +1,11 @@
 ---
-name: domaininfo
+name: whois-skill
+slug: whois-skill
 license: MIT
-description: "Look up domain WHOIS information, check email security (DMARC/SPF/DKIM), inspect TLS certificates, and capture website screenshots. Provides a comprehensive, domain-only report."
+description: "Look up domain WHOIS information, DNS records, email security (DMARC/SPF/DKIM), and TLS details with an optional website screenshot."
 ---
 
-# domaininfo
+# whois-skill
 
 Look up domain WHOIS information and (optionally) capture website screenshots.
 
