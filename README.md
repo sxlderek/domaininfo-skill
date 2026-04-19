@@ -1,28 +1,44 @@
-# OpenClaw `domaininfo` Skill
+# whois-skill (OpenClaw Skill)
 
-A domain analysis skill that produces a domain-only report with:
+A domain analysis skill that produces a **domain-only report** including:
 
-- WHOIS summary
-- DNS records (A/AAAA/NS/MX)
+- WHOIS summary (**prefers registrar WHOIS data when it differs from registry data**)
+- DNS records (A/AAAA/NS/MX/TXT)
 - Email security signals (DMARC/SPF/DKIM)
-- TLS certificate info
-- Optional website screenshot (only when screenshot tooling is already available)
+- TLS certificate info (HTTPS)
+- Optional website screenshot (when supported)
 
 ## Usage
 
-Type:
+In chat:
 
 - `whois <domain>`
 
-Supports:
+Input can be:
+
 - Plain domains (e.g., `example.com`)
 - Full URLs (the skill extracts the domain)
 - Emails (the skill extracts the domain after `@`)
-- Internationalized domain names (IDNs) / non-ASCII domains (the skill can convert to Punycode automatically, e.g., `秒秒指南.com` → `xn--6krx87aehra.com`)
 
-## Screenshot behavior (important)
+## Notes
 
-Screenshot is an optional enhancement.
+### Registrar vs registry expiry dates
 
-- If the runtime has OpenClaw browser automation available, the skill may capture a screenshot.
-- If not, it must skip screenshot capture (no prompting the user to install Playwright/Chromium).
+For some TLDs (notably **.com**), you may see both:
+
+- `Registry Expiry Date`
+- `Registrar Registration Expiration Date`
+
+When they differ, this skill reports both and treats the **registrar expiration date** as the primary one.
+
+### Screenshot behavior
+
+Screenshot is an optional enhancement:
+
+- If OpenClaw browser automation is available, the skill may capture a screenshot.
+- Otherwise it skips screenshot capture silently.
+
+## Files
+
+- `SKILL.md` — main skill instructions
+- `references/` — auxiliary docs (if present)
